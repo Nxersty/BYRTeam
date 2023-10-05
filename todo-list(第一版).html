@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List</title>
+    <style>
+        .container {
+          max-width: 600px;
+          margin: auto;
+          padding: 20px;
+        }
+        
+        .lists {
+          display: flex;
+          flex-direction: column;
+        }
+        
+        .list {
+          margin-bottom: 20px;
+        }
+        
+        .list-name {
+          width: 100%;
+          margin-bottom: 10px;
+          padding: 5px;
+        }
+        
+        .todos {
+          list-style-type: none;
+          padding: 0;
+          margin-bottom: 10px;
+        }
+        
+        .todos li {
+          display: flex;
+          align-items: center;
+          margin-bottom: 5px;
+        }
+        
+        .todo-checkbox {
+          margin-right: 10px;
+        }
+        
+        .todo-input {
+          flex-grow: 1;
+          padding: 5px;
+        }
+        
+        .todo-status {
+          margin-right: 10px;
+        }
+        
+        .delete-todo {
+          margin-left: 10px;
+        }
+        
+        .add-todo,
+        .add-list {
+          margin-top: 10px;
+        }
+        
+        .delete-list {
+          margin-top: 20px;
+        }
+        </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Todo List</h1>
+        <div class="lists">
+          <div class="list">
+            <input type="text" class="list-name" placeholder="List Name">
+            <ul class="todos">
+              <li class="todo">
+                <input type="checkbox" class="todo-checkbox">
+                <input type="text" class="todo-input" placeholder="Todo">
+                <select class="todo-status">
+                  <option value="未完成">未完成</option>
+                  <option value="执行中">执行中</option>
+                  <option value="已完成">已完成</option>
+                </select>
+                <button class="delete-todo">Delete</button>
+              </li>
+            </ul>
+            <button class="add-todo">Add Todo</button>
+            <button class="delete-list">Delete List</button>
+          </div>
+          <button class="add-list">Add List</button>
+        </div>
+    </div>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script>
+    const addListButton = document.querySelector('.add-list');
+    const deleteListButtons = document.querySelectorAll('.delete-list');
+    const addTodoButtons = document.querySelectorAll('.add-todo');
+    const deleteTodoButtons = document.querySelectorAll('.delete-todo');
+
+
+    addListButton.addEventListener('click', function() {
+        const lists = document.querySelector('.lists');
+        const newList = document.createElement('div');
+        newList.classList.add('list');
+        newList.innerHTML = `
+        <input type="text" class="list-name" placeholder="List Name">
+            <ul class="todos">
+              <li class="todo">
+                <input type="checkbox" class="todo-checkbox">
+                <input type="text" class="todo-input" placeholder="Todo">
+                <select class="todo-status">
+                  <option value="未完成">未完成</option>
+                  <option value="执行中">执行中</option>
+                  <option value="已完成">已完成</option>
+                </select>
+                <button class="delete-todo">Delete</button>
+              </li>
+            </ul>
+            <button class="add-todo">Add Todo</button>
+            <button class="delete-list">Delete List</button>
+          </div>          
+       `;
+        lists.appendChild(newList);
+        setupEventListeners();
+    });
+
+
+    function deleteList(event) {
+        const list = event.target.parentNode;
+        list.parentNode.removeChild(list);
+    }
+
+
+
+    function addTodo(event) {
+        const todos = event.target.parentNode.querySelector('.todos');
+        const newTodo = document.createElement('li');
+        newTodo.classList.add('todo');
+        newTodo.innerHTML = `
+        <input type="checkbox" class="todo-checkbox">
+            <input type="text" class="todo-input" placeholder="Todo">
+            <select class="todo-status">
+              <option value="未完成">未完成</option>
+              <option value="执行中">执行中</option>                  
+              <option value="已完成">已完成</option>
+            </select>
+            <button class="delete-todo">Delete</button>
+       `;
+        todos.appendChild(newTodo);
+        setupEventListeners();
+    }
+
+
+    function deleteTodo(event) {
+        const todo = event.target.parentNode;
+        todo.parentNode.removeChild(todo);
+    }
+
+    function saveData() {
+        const lists = document.querySelectorAll('.list');
+        const data = [];
+
+    lists.forEach(list => {
+        const listName = list.querySelector('.list-name').value;
+        const todos = list.querySelectorAll('.todo');
+        const listData = {
+            name: listName,
+            todos: []
+    };
+
+    todos.forEach(todo => {
+        const todoText = todo.querySelector('.todo-input').value;
+        const todoStatus = todo.querySelector('.todo-status').value;
+        const todoData = {
+            text: todoText,
+            status: todoStatus
+        };
+        listData.todos.push(todoData);
+    });
+
+        data.push(listData);
+    });
+
+    localStorage.setItem('todoData', JSON.stringify(data));
+}
+
+
+function loadData() {
+    const data = JSON.parse(localStorage.getItem('todoData'));
+
+    if (data) {
+        data.forEach(listData => {
+            const lists = document.querySelector('.lists');
+            const newList = document.createElement('div');
+            newList.classList.add('list');
+            newList.innerHTML = `
+            <input type="text" class="list-name" value="${listData.name}">
+            <ul class="todos">
+            </ul>
+            <button class="add-todo">Add Todo</button>
+            <button class="delete-list">Delete List</button>
+           `;
+
+        listData.todos.forEach(todoData => {
+            const todos = newList.querySelector('.todos');
+            const newTodo = document.createElement('li');
+            newTodo.classList.add('todo');
+            newTodo.innerHTML = `
+            <input type="checkbox" class="todo-checkbox">
+            <input type="text" class="todo-input" value="${todoData.text}">
+            <select class="todo-status">
+              <option value="未完成">未完成</option>
+              <option value="执行中">执行中</option>
+              <option value="已完成">已完成</option>
+            </select>
+            <button class="delete-todo">Delete</button>
+           `;
+            todos.appendChild(newTodo);
+            });
+
+        lists.appendChild(newList);
+        });
+    }
+
+    setupEventListeners();
+}
+
+function setupEventListeners() {
+    deleteListButtons.forEach(button => button.addEventListener('click', deleteList));
+    addTodoButtons.forEach(button => button.addEventListener('click', addTodo));
+    deleteTodoButtons.forEach(button => button.addEventListener('click', deleteTodo));
+    const inputs = document.querySelectorAll('input, select');
+    inputs.forEach(input => input.addEventListener('change', saveData));
+}
+
+loadData();
+</script>
+</body>
+</html>
